@@ -1,4 +1,5 @@
 from math import log2
+from random import randint
 
 
 class Monoid:
@@ -63,11 +64,17 @@ class SegmentTree:
                 break
 
             if l_i % 2 == 1:
-                lval = self.tree[lp_i]
+                lval = self.monoid.op(
+                    lval,
+                    self.tree[SegmentTree.__sibling(l_i)]
+                )
             l_i = lp_i
 
             if r_i % 2 == 0:
-                rval = self.tree[rp_i]
+                rval = self.monoid.op(
+                    rval,
+                    self.tree[SegmentTree.__sibling(r_i)]
+                )
             r_i = rp_i
 
         return self.monoid.op(lval, rval)
@@ -85,6 +92,11 @@ class SegmentTree:
 
     def __parent(i):
         return (i+1)//2-1 if i > 0 else None
+
+    def __sibling(i):
+        if i == 0:
+            return None
+        return ((i-1) ^ 1)+1
 
 
 class Dummy:
@@ -124,16 +136,53 @@ def test2():
     st = SegmentTree(Monoid(A, max, 0))
     d = Dummy(Monoid(A, max, 0))
 
-    for l in range(0, len(A)-1):
-        for r in range(l+1, len(A)):
-            assert (st.answer_range(l, r) == d.answer_range(l, r))
+    check(st, d)
 
     st.update(2, 53)
     d.update(2, 53)
-    for l in range(0, len(A)-1):
-        for r in range(l+1, len(A)):
-            assert (st.answer_range(l, r) == d.answer_range(l, r))
+
+    check(st, d)
+
+
+def check(st, d):
+    set_len = len(st.monoid.set)
+
+    for l in range(0, set_len-1):
+        for r in range(l+1, set_len):
+            if st.answer_range(l, r) != d.answer_range(l, r):
+                print("N={}".format(set_len))
+                print("[l,r)=[{},{})".format(l, r))
+                print("A={}".format(d.monoid.set, l, r))
+                print("tree={}".format(st.tree))
+                print("st answer:", st.answer_range(l, r))
+                print("d  answer:", d.answer_range(l, r))
+
+                assert False
+
+
+def test3():
+    A = [3, 4, 5, 0, 1, 5, 0, 6]
+    st = SegmentTree(Monoid(A, max, 0))
+    d = Dummy(Monoid(A, max, 0))
+    check(st, d)
+
+
+def test_fuzzing():
+    A = [0] * 100
+    st = SegmentTree(Monoid(A, max, 0))
+    d = Dummy(Monoid(A, max, 0))
+
+    for _ in range(100):
+        check(st, d)
+
+        i = randint(0, len(A)-1)
+        val = randint(0, 50000)
+
+        st.update(i, val)
+        d.update(i, val)
 
 
 test1()
 test2()
+test3()
+test_fuzzing()
