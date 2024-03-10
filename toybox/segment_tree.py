@@ -51,17 +51,26 @@ class SegmentTree:
         if r - l == 1:
             return self.tree[l_i]
 
-        while l_i % 2 == 1:
-            l_i = SegmentTree.__parent(l_i)
+        lp_i = l_i
+        rp_i = r_i
+        lval = self.tree[l_i]
+        rval = self.tree[r_i]
+        while True:
+            lp_i = SegmentTree.__parent(lp_i)
+            rp_i = SegmentTree.__parent(rp_i)
 
-        # Root ノードまでは遡らない
-        while r_i % 2 == 0 and SegmentTree.__parent(r_i) != 0:
-            r_i = SegmentTree.__parent(r_i)
+            if lp_i == rp_i:
+                break
 
-        return self.monoid.op(
-            self.tree[l_i],
-            self.tree[r_i],
-        )
+            if l_i % 2 == 1:
+                lval = self.tree[lp_i]
+            l_i = lp_i
+
+            if r_i % 2 == 0:
+                rval = self.tree[rp_i]
+            r_i = rp_i
+
+        return self.monoid.op(lval, rval)
 
     def __nleaf(n):
         for i in range(1, 33):
@@ -78,17 +87,53 @@ class SegmentTree:
         return (i+1)//2-1 if i > 0 else None
 
 
-A = [27, 18, 16, 37, 25, 54, 21, 11]
-st = SegmentTree(Monoid(A, max, 0))
-assert (st.tree == [54, 37, 54, 27, 37, 54,
-        21, 27, 18, 16, 37, 25, 54, 21, 11])
+class Dummy:
+    def __init__(self, monoid):
+        self.monoid = monoid
 
-assert (st.answer_range(2, 3) == 16)
-assert (st.answer_range(2, 4) == 37)
-assert (st.answer_range(2, 5) == 37)
-assert (st.answer_range(2, 6) == 54)
-assert (st.answer_range(2, 8) == 54)
+    def update(self, i, val):
+        self.monoid.set[i] = val
 
-st.update(2, 53)
-assert (st.tree == [54, 53, 54, 27, 53, 54,
-        21, 27, 18, 53, 37, 25, 54, 21, 11])
+    def answer_range(self, l, r):
+        subset = self.monoid.set[l:r]
+        res = subset[0]
+        for i in range(1, len(subset)):
+            res = self.monoid.op(res, subset[i])
+        return res
+
+
+def test1():
+    A = [27, 18, 16, 37, 25, 54, 21, 11]
+    st = SegmentTree(Monoid(A, max, 0))
+    assert (st.tree == [54, 37, 54, 27, 37, 54,
+            21, 27, 18, 16, 37, 25, 54, 21, 11])
+
+    assert (st.answer_range(2, 3) == 16)
+    assert (st.answer_range(2, 4) == 37)
+    assert (st.answer_range(2, 5) == 37)
+    assert (st.answer_range(2, 6) == 54)
+    assert (st.answer_range(2, 8) == 54)
+
+    st.update(2, 53)
+    assert (st.tree == [54, 53, 54, 27, 53, 54,
+            21, 27, 18, 53, 37, 25, 54, 21, 11])
+
+
+def test2():
+    A = [27, 18, 16, 37, 25, 54, 21, 11]
+    st = SegmentTree(Monoid(A, max, 0))
+    d = Dummy(Monoid(A, max, 0))
+
+    for l in range(0, len(A)-1):
+        for r in range(l+1, len(A)):
+            assert (st.answer_range(l, r) == d.answer_range(l, r))
+
+    st.update(2, 53)
+    d.update(2, 53)
+    for l in range(0, len(A)-1):
+        for r in range(l+1, len(A)):
+            assert (st.answer_range(l, r) == d.answer_range(l, r))
+
+
+test1()
+test2()
