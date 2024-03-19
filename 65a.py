@@ -11,35 +11,13 @@ def calc_nstaff(i, direct_staffs, memo):
     return nstaff + 1
 
 
-def search_loop(i, bosses):
-    loop = {}
-
-    cur = i
-    while cur not in loop:
-        loop[cur] = True
-        cur = bosses[cur]
-
-    return loop
-
-
 def solve_a65(N, bosses):
-    # インデックスを合わせる
-    bosses = [-1, -1] + bosses
-
     direct_staffs = [[] for _ in range(N+10)]
     for i, boss in enumerate(bosses):
-        direct_staffs[boss].append(i)
+        direct_staffs[boss].append(i+2)
 
     memo = {}
     calc_nstaff(1, direct_staffs, memo)
-
-    for i in range(1, N+1):
-        if i not in memo:
-            loop = search_loop(i, bosses)
-            for j in loop:
-                # `loop` には、ループを構成する頂点が重複なく入っている。
-                # そのため、各頂点の部下の数は（ループの長さ）-1。
-                memo[j] = len(loop) - 1
 
     res = []
     for i in range(1, N+1):
@@ -97,17 +75,17 @@ def test():
         [2, 0, 0]
     )
 
-    # 社長（社員1）をルートとする木構造から非連結な閉路を持つケース
-    assert (
-        # 1 -> 4
-        # 2 -> 3 -> 2
-        solve_a65(
-            4,
-            [3, 2, 1],
-        )
-        ==
-        [1, 1, 1, 0]
-    )
+    # # 社長（社員1）をルートとする木構造から非連結な閉路を持つケース
+    # assert (
+    #     # 1 -> 4
+    #     # 2 -> 3 -> 2
+    #     solve_a65(
+    #         4,
+    #         [3, 2, 1],
+    #     )
+    #     ==
+    #     [1, 1, 1, 0]
+    # )
 
     # # 閉路に合流するパスが存在する、より複雑なケース
     # assert (
