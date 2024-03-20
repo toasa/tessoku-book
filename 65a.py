@@ -8,26 +8,21 @@ def solve_a65(N, bosses):
 
     stack = [1]
     while len(stack) > 0:
-        head = stack[len(stack)-1]
+        head = stack.pop()
         res[head] = 0
 
-        do_pop = False
+        # leaf
+        if len(direct_staffs[head]) == 0:
+            continue
 
-        if len(direct_staffs[head]) > 0:
-            for staff in direct_staffs[head]:
-                if res[staff] == UNDEF:
-                    res[staff] = 0
-                    stack.append(staff)
-                    do_pop = False
-                    break
-                res[head] += res[staff] + 1
-                do_pop = True
-        else:
-            # leaf node
-            do_pop = True
+        # has children
+        for staff in direct_staffs[head]:
+            if res[staff] == UNDEF:
+                stack.append(head)
+                stack.append(staff)
+                continue
 
-        if do_pop:
-            stack.pop()
+            res[head] += res[staff] + 1
 
     return res[1:N+1]
 
@@ -109,17 +104,17 @@ def test():
 
 
 def main():
-    test()
+    # test()
 
-    # N = int(input())
-    # bosses = list(map(int, input().split()))
+    N = int(input())
+    bosses = list(map(int, input().split()))
 
-    # res = solve_a65(N, bosses)
-    # for i, r in enumerate(res):
-    #     if i+1 == len(res):
-    #         print(r)
-    #     else:
-    #         print("{} ".format(r), end="")
+    res = solve_a65(N, bosses)
+    for i, r in enumerate(res):
+        if i+1 == len(res):
+            print(r)
+        else:
+            print("{} ".format(r), end="")
 
 
 main()
