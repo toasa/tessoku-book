@@ -1,29 +1,35 @@
-def calc_nstaff(i, direct_staffs, memo):
-    if len(direct_staffs[i]) == 0:
-        memo[i] = 0
-        return 1
-
-    nstaff = 0
-    for staff in direct_staffs[i]:
-        nstaff += calc_nstaff(staff, direct_staffs, memo)
-
-    memo[i] = nstaff
-    return nstaff + 1
-
-
 def solve_a65(N, bosses):
     direct_staffs = [[] for _ in range(N+10)]
     for i, boss in enumerate(bosses):
         direct_staffs[boss].append(i+2)
 
-    memo = {}
-    calc_nstaff(1, direct_staffs, memo)
+    UNDEF = -1
+    res = [UNDEF for _ in range(N+10)]
 
-    res = []
-    for i in range(1, N+1):
-        res.append(memo[i])
+    stack = [1]
+    while len(stack) > 0:
+        head = stack[len(stack)-1]
+        res[head] = 0
 
-    return res
+        do_pop = False
+
+        if len(direct_staffs[head]) > 0:
+            for staff in direct_staffs[head]:
+                if res[staff] == UNDEF:
+                    res[staff] = 0
+                    stack.append(staff)
+                    do_pop = False
+                    break
+                res[head] += res[staff] + 1
+                do_pop = True
+        else:
+            # leaf node
+            do_pop = True
+
+        if do_pop:
+            stack.pop()
+
+    return res[1:N+1]
 
 
 def test():
@@ -103,17 +109,17 @@ def test():
 
 
 def main():
-    # test()
+    test()
 
-    N = int(input())
-    bosses = list(map(int, input().split()))
+    # N = int(input())
+    # bosses = list(map(int, input().split()))
 
-    res = solve_a65(N, bosses)
-    for i, r in enumerate(res):
-        if i+1 == len(res):
-            print(r)
-        else:
-            print("{} ".format(r), end="")
+    # res = solve_a65(N, bosses)
+    # for i, r in enumerate(res):
+    #     if i+1 == len(res):
+    #         print(r)
+    #     else:
+    #         print("{} ".format(r), end="")
 
 
 main()
