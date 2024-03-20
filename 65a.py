@@ -3,26 +3,33 @@ def solve_a65(N, bosses):
     for i, boss in enumerate(bosses):
         direct_staffs[boss].append(i+2)
 
-    UNDEF = -1
-    res = [UNDEF for _ in range(N+10)]
+    UNRESOLVED = -1
+    res = [UNRESOLVED for _ in range(N+10)]
 
     stack = [1]
     while len(stack) > 0:
         head = stack.pop()
-        res[head] = 0
 
         # leaf
         if len(direct_staffs[head]) == 0:
+            res[head] = 0
             continue
 
-        # has children
-        for staff in direct_staffs[head]:
-            if res[staff] == UNDEF:
-                stack.append(head)
-                stack.append(staff)
-                continue
+        # not leaf
 
-            res[head] += res[staff] + 1
+        # The `head` node is pop-ed second, so its children are all calculated.
+        if res[head] == 0:
+            for staff in direct_staffs[head]:
+                res[head] += res[staff] + 1
+            continue
+
+        # The `head` node is pop-ed first, so walk its children.
+        res[head] = 0
+        stack.append(head)
+
+        for staff in direct_staffs[head]:
+            if res[staff] == UNRESOLVED:
+                stack.append(staff)
 
     return res[1:N+1]
 
