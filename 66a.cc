@@ -18,14 +18,7 @@ class UnionFinder {
         Node *r1 = root(id1);
         Node *r2 = root(id2);
 
-        if (r1->nchild > r2->nchild) {
-            Node *tmp = r1;
-            r1 = r2;
-            r2 = tmp;
-        }
-
         r1->parent = r2;
-        r2->nchild += r1->nchild;
     }
 
     bool is_connected(u64 id1, u64 id2) {
@@ -38,19 +31,19 @@ class UnionFinder {
   private:
     class Node {
       public:
-        Node(u64 id) : id(id), nchild(1), parent(nullptr) {}
+        Node(u64 id) : id(id), parent(nullptr) {}
 
         u64 id;
-        u64 nchild;
         Node *parent;
     };
 
     Node *root(u64 id) {
         Node *cur = &nodes[id];
-        while (cur->parent != nullptr)
-            cur = cur->parent;
+        if (cur->parent == nullptr)
+            return cur;
 
-        return cur;
+        cur->parent = root(cur->parent->id);
+        return cur->parent;
     }
 
     std::vector<Node> nodes;
