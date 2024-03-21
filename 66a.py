@@ -2,21 +2,21 @@ class UnionFinder:
     def __init__(self, n_node):
         self.nodes = [UnionFinder.Node(i) for i in range(n_node+1)]
 
-    def __root(self, node):
-        cur = node
+    def __root(self, id):
+        cur = self.nodes[id]
         while cur.parent != None:
             cur = cur.parent
         return cur
 
     def is_connected(self, id1, id2):
-        n1 = self.nodes[id1]
-        n2 = self.nodes[id2]
+        return self.__root(id1).id == self.__root(id2).id
 
-        return self.__root(n1).id == self.__root(n2).id
+    def unite(self, id1, id2):
+        r1 = self.__root(id1)
+        r2 = self.__root(id2)
 
-    def unite(self, n1, n2):
-        r1 = self.__root(self.nodes[n1])
-        r2 = self.__root(self.nodes[n2])
+        if r1.id == r2.id:
+            return
 
         if r1.nchild > r2.nchild:
             r1, r2 = r2, r1
