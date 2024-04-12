@@ -1,17 +1,17 @@
 # めぐる式二分探索の実装
 # 参考資料： https://qiita.com/drken/items/97e37dd6143e33a64c8c
 
-# is_ok(i) == True となるようなインデックス i のうち、最小の i を返す
+#  needle <= haystack[i] (条件A) となるようなインデックス i のうち、最小の i を返す
 #
 # l と r　は以下の条件を満たしつつ、更新していく
-# * l は常に is_ok() を満たさない
-# * r は常に is_ok() を満たす
-def bisearch_meguru(arr, is_ok):
+# * l は常に (条件A) を満たさない
+# * r は常に (条件A) を満たす
+def bisearch_meguru(haystack, needle):
     l = -1
-    r = len(arr)
+    r = len(haystack)
     while r-l > 1:
         mid = (l+r)//2
-        if is_ok(mid):
+        if needle <= haystack[mid]:
             r = mid
         else:
             l = mid
@@ -23,7 +23,7 @@ def solve_b10(arr, queries):
     res = []
     for q in queries:
         def is_ok(i): return q <= arr[i]
-        res.append(bisearch_meguru(arr, is_ok))
+        res.append(bisearch_meguru(arr, q))
     return res
 
 
