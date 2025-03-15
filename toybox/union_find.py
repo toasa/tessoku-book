@@ -1,115 +1,73 @@
-class UnionFinder:
+class UnionFind:
     def __init__(self, n_node):
-        self.nodes = [UnionFinder.Node(i) for i in range(n_node+1)]
+        self.parent = list(range(n_node+1))
+        self.rank = [0] * (n_node+1)
 
-    def __root(self, id):
-        cur = self.nodes[id]
-        while cur.parent != None:
-            cur = cur.parent
-        return cur
+    def find(self, x):
+        if self.parent[x] == x:
+            return x
 
-    def is_connected(self, id1, id2):
-        return self.__root(id1).id == self.__root(id2).id
+        self.parent[x] = self.find(self.parent[x])  # 経路圧縮
+        return self.parent[x]
 
-    def unite(self, id1, id2):
-        r1 = self.__root(id1)
-        r2 = self.__root(id2)
+    def is_same(self, x, y):
+        return self.find(x) == self.find(y)
 
-        if r1.id == r2.id:
-            return
+    def union(self, x, y):
+        root_x = self.find(x)
+        root_y = self.find(y)
 
-        if r1.nchild > r2.nchild:
-            r1, r2 = r2, r1
-
-        r2.nchild += r1.nchild
-        r1.parent = r2
-
-    class Node:
-        def __init__(self, _id):
-            self.id = _id
-            self.parent = None
-            self.nchild = 1
+        if self.rank[root_x] < self.rank[root_y]:
+            self.parent[root_x] = root_y
+        elif self.rank[root_y] < self.rank[root_x]:
+            self.parent[root_y] = root_x
+        else:
+            self.parent[root_y] = root_x
+            self.rank[root_x] += 1
 
 
 def test1():
-    uf = UnionFinder(3)
+    uf = UnionFind(3)
 
-    assert (uf.is_connected(1, 2) == False)
-    assert (uf.is_connected(1, 3) == False)
-    assert (uf.is_connected(2, 3) == False)
+    assert (uf.is_same(1, 2) == False)
+    assert (uf.is_same(1, 3) == False)
+    assert (uf.is_same(2, 3) == False)
 
-    uf.unite(1, 2)
-    assert (uf.is_connected(1, 2) == True)
-    assert (uf.is_connected(1, 3) == False)
-    assert (uf.is_connected(2, 3) == False)
+    uf.union(1, 2)
+    assert (uf.is_same(1, 2) == True)
+    assert (uf.is_same(1, 3) == False)
+    assert (uf.is_same(2, 3) == False)
 
-    uf.unite(2, 3)
-    assert (uf.is_connected(1, 2) == True)
-    assert (uf.is_connected(1, 3) == True)
-    assert (uf.is_connected(2, 3) == True)
+    uf.union(2, 3)
+    assert (uf.is_same(1, 2) == True)
+    assert (uf.is_same(1, 3) == True)
+    assert (uf.is_same(2, 3) == True)
 
 
 def test2():
-    uf = UnionFinder(12)
+    uf = UnionFind(12)
 
-    assert (uf.is_connected(2, 9) == False)
+    assert (uf.is_same(2, 9) == False)
 
-    uf.unite(1, 7)
-    uf.unite(1, 4)
+    uf.union(1, 7)
+    uf.union(1, 4)
 
-    assert (uf.is_connected(3, 6) == False)
+    assert (uf.is_same(3, 6) == False)
 
-    uf.unite(3, 5)
+    uf.union(3, 5)
 
-    assert (uf.is_connected(3, 5) == True)
+    assert (uf.is_same(3, 5) == True)
 
-    uf.unite(10, 12)
-    uf.unite(4, 8)
-    uf.unite(8, 11)
+    uf.union(10, 12)
+    uf.union(4, 8)
+    uf.union(8, 11)
 
-    assert (uf.is_connected(10, 12) == True)
+    assert (uf.is_same(10, 12) == True)
 
-    uf.unite(5, 9)
+    uf.union(5, 9)
 
-    assert (uf.is_connected(6, 8) == False)
-
-
-def test3():
-    uf = UnionFinder(8)
-
-    uf.unite(2, 1)
-    assert (uf.nodes[1].parent == None)
-    assert (uf.nodes[2].parent.id == 1)
-
-    uf.unite(3, 2)
-    assert (uf.nodes[1].parent == None)
-    assert (uf.nodes[2].parent.id == 1)
-    assert (uf.nodes[3].parent.id == 1)
-
-    uf.unite(4, 3)
-    assert (uf.nodes[1].parent == None)
-    assert (uf.nodes[2].parent.id == 1)
-    assert (uf.nodes[3].parent.id == 1)
-    assert (uf.nodes[4].parent.id == 1)
-
-    uf.unite(5, 4)
-    assert (uf.nodes[1].parent == None)
-    assert (uf.nodes[2].parent.id == 1)
-    assert (uf.nodes[3].parent.id == 1)
-    assert (uf.nodes[4].parent.id == 1)
-    assert (uf.nodes[5].parent.id == 1)
-
-    uf.unite(7, 6)
-    uf.unite(8, 6)
-    assert (uf.nodes[6].parent == None)
-    assert (uf.nodes[7].parent.id == 6)
-    assert (uf.nodes[8].parent.id == 6)
-
-    uf.unite(1, 6)
-    assert (uf.nodes[1].nchild == 8)
-    assert (uf.nodes[6].parent.id == 1)
+    assert (uf.is_same(6, 8) == False)
 
 
 test1()
 test2()
-test3()
